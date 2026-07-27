@@ -29,7 +29,10 @@ export class OpencodeWebviewProvider implements vscode.WebviewViewProvider {
 
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-        this._setupPty();
+        webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+        
+        // Do not start PTY automatically
+        // this._setupPty();
 
         webviewView.webview.onDidReceiveMessage(
             message => {
@@ -59,12 +62,27 @@ export class OpencodeWebviewProvider implements vscode.WebviewViewProvider {
                     case 'openOpencode':
                         this._switchCli('opencode');
                         break;
+                    case 'openShell':
+                        this._switchCli('shell');
+                        break;
                     case 'requestPaste':
                         vscode.env.clipboard.readText().then(text => {
                             if (this._ptyProcess && text) {
                                 this._ptyProcess.write(text);
                             }
                         });
+                        break;
+                    case 'writeToTerminal':
+                        if (this._ptyProcess) {
+                            this._ptyProcess.write(message.value);
+                        }
+                        break;
+                    case 'startTerminal':
+                        this._reloadPty();
+                        this._view?.webview.postMessage({ type: 'terminalStarted' });
+                        break;
+                    case 'copyText':
+                        vscode.env.clipboard.writeText(message.value);
                         break;
                 }
             });
@@ -104,10 +122,15 @@ export class OpencodeWebviewProvider implements vscode.WebviewViewProvider {
 
     private _setupPty() {
         const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-        const config = vscode.workspace.getConfiguration('dynoExtension');
-        const command = config.get<string>(`terminal.${this._currentCli}Command`) || this._currentCli;
+        let args: string[] = [];
+        
+        if (this._currentCli !== 'shell') {
+            const config = vscode.workspace.getConfiguration('dynoExtension');
+            const command = config.get<string>(`terminal.${this._currentCli}Command`) || this._currentCli;
+            args = ['-NoExit', '-Command', command];
+        }
 
-        this._ptyProcess = pty.spawn(process.platform === 'win32' ? 'powershell.exe' : 'bash', ['-NoExit', '-Command', command], {
+        this._ptyProcess = pty.spawn(process.platform === 'win32' ? 'powershell.exe' : 'bash', args, {
             name: 'xterm-color',
             cols: 80,
             rows: 30,
@@ -193,7 +216,7 @@ export class OpencodeWebviewProvider implements vscode.WebviewViewProvider {
                     }
                     #closed-state {
                         flex: 1;
-                        display: none;
+                        display: flex;
                         flex-direction: column;
                         align-items: center;
                         justify-content: center;
@@ -227,6 +250,31 @@ export class OpencodeWebviewProvider implements vscode.WebviewViewProvider {
                     ::-webkit-scrollbar-thumb:active {
                         background-color: var(--vscode-scrollbarSlider-activeBackground);
                     }
+                    #context-menu {
+                        position: absolute;
+                        display: none;
+                        background-color: var(--vscode-menu-background);
+                        color: var(--vscode-menu-foreground);
+                        border: 1px solid var(--vscode-menu-border);
+                        box-shadow: 0 2px 8px var(--vscode-widget-shadow);
+                        z-index: 1000;
+                        border-radius: 4px;
+                        padding: 4px 0;
+                        min-width: 120px;
+                    }
+                    .context-menu-item {
+                        padding: 6px 12px;
+                        cursor: pointer;
+                        font-size: 13px;
+                        font-family: var(--vscode-font-family);
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    .context-menu-item:hover {
+                        background-color: var(--vscode-menu-selectionBackground);
+                        color: var(--vscode-menu-selectionForeground);
+                    }
                 </style>
             </head>
             <body>
@@ -244,12 +292,27 @@ export class OpencodeWebviewProvider implements vscode.WebviewViewProvider {
                             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.4 2.6l-1-1-2.2 2.2-1.2-1.2 2.2-2.2-1-1h4.2v4.2l-1-1-1.2 1.2-2.2-2.2zm-10.8 0l1 1 2.2-2.2 1.2 1.2-2.2 2.2 1 1H2.4V2.6l1 1 1.2-1.2 2.2 2.2zM2.6 13.4l1 1 2.2-2.2 1.2 1.2-2.2 2.2 1 1H2.4v-4.2l1-1-1.2 1.2 2.2 2.2zm10.8 0l-1-1-2.2 2.2-1.2-1.2 2.2-2.2-1-1h4.2v4.2l-1 1 1.2-1.2-2.2-2.2zM8 4.5A3.5 3.5 0 1 0 11.5 8 3.5 3.5 0 0 0 8 4.5zm0 6A2.5 2.5 0 1 1 10.5 8 2.5 2.5 0 0 1 8 10.5z"/></svg>
                             Gemini
                         </button>
+                        <button id="tab-shell" title="Shell">
+                            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 4l4 4-4 4L4.8 11.3l3.3-3.3-3.3-3.3L5.5 4zm4 8h5v1h-5v-1z"/></svg>
+                            Shell
+                        </button>
                     </div>
                 </div>
-                <div id="terminal-container"></div>
+                <div id="terminal-container" style="display: none;"></div>
                 <div id="closed-state">
-                    <div>Opencode terminal is closed.</div>
-                    <button id="btn-start">Start Opencode</button>
+                    <div>Terminal is not running.</div>
+                    <button id="btn-start" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; padding: 6px 12px; cursor: pointer; border-radius: 2px;">Start Terminal</button>
+                </div>
+                
+                <div id="context-menu">
+                    <div class="context-menu-item" id="menu-copy">
+                        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M4 4l1-1h5.414L14 6.586V14l-1 1H5l-1-1V4zm9 3l-3-3H5v10h8V7z"/><path d="M3 1H2v14h1V2h9V1H3z"/></svg>
+                        Copy
+                    </div>
+                    <div class="context-menu-item" id="menu-paste">
+                        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M14 4h-2V3a1 1 0 0 0-1-1H9V1H7v1H5a1 1 0 0 0-1 1v1H2v11h12V4zM8 2h1v1H7V2zM5 4V3h2v2h2V3h2v1h1v10H3V4h2z"/></svg>
+                        Paste
+                    </div>
                 </div>
 
                 <script nonce="${nonce}" src="${xtermJsUri}"></script>
@@ -294,7 +357,7 @@ export class OpencodeWebviewProvider implements vscode.WebviewViewProvider {
                     });
                     resizeObserver.observe(document.getElementById('terminal-container'));
                     
-                    const tabs = ['tab-opencode', 'tab-claude', 'tab-gemini'];
+                    const tabs = ['tab-opencode', 'tab-claude', 'tab-gemini', 'tab-shell'];
                     const activateTab = (tabId) => {
                         tabs.forEach(id => document.getElementById(id).classList.remove('active'));
                         document.getElementById(tabId).classList.add('active');
@@ -314,6 +377,14 @@ export class OpencodeWebviewProvider implements vscode.WebviewViewProvider {
                         activateTab('tab-gemini');
                         vscode.postMessage({ type: 'openGemini' });
                     });
+                    document.getElementById('tab-shell').addEventListener('click', () => {
+                        activateTab('tab-shell');
+                        vscode.postMessage({ type: 'openShell' });
+                    });
+                    
+                    document.getElementById('btn-start').addEventListener('click', () => {
+                        vscode.postMessage({ type: 'startTerminal' });
+                    });
 
                     term.onData(data => {
                         vscode.postMessage({
@@ -322,10 +393,63 @@ export class OpencodeWebviewProvider implements vscode.WebviewViewProvider {
                         });
                     });
 
-                    // Handle Right-Click to Paste
+                    // Handle Context Menu (Right Click)
+                    const contextMenu = document.getElementById('context-menu');
                     document.getElementById('terminal-container').addEventListener('contextmenu', e => {
                         e.preventDefault();
+                        contextMenu.style.display = 'block';
+                        let x = e.clientX;
+                        let y = e.clientY;
+                        if (x + contextMenu.offsetWidth > window.innerWidth) x = window.innerWidth - contextMenu.offsetWidth;
+                        if (y + contextMenu.offsetHeight > window.innerHeight) y = window.innerHeight - contextMenu.offsetHeight;
+                        contextMenu.style.left = x + 'px';
+                        contextMenu.style.top = y + 'px';
+                    });
+
+                    document.addEventListener('click', e => {
+                        if (!contextMenu.contains(e.target)) {
+                            contextMenu.style.display = 'none';
+                        }
+                    });
+
+                    document.getElementById('menu-copy').addEventListener('click', () => {
+                        const selection = term.getSelection();
+                        if (selection) {
+                            vscode.postMessage({ type: 'copyText', value: selection });
+                        }
+                        contextMenu.style.display = 'none';
+                    });
+
+                    document.getElementById('menu-paste').addEventListener('click', () => {
                         vscode.postMessage({ type: 'requestPaste' });
+                        contextMenu.style.display = 'none';
+                    });
+
+                    // Handle Drag and Drop
+                    const terminalContainer = document.getElementById('terminal-container');
+                    terminalContainer.addEventListener('dragover', e => {
+                        e.preventDefault(); // allow drop
+                    });
+
+                    terminalContainer.addEventListener('drop', e => {
+                        e.preventDefault();
+                        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                            const paths = [];
+                            for (let i = 0; i < e.dataTransfer.files.length; i++) {
+                                const file = e.dataTransfer.files[i];
+                                if (file.path) {
+                                    paths.push('"' + file.path + '"'); // use double quotes for Windows/PS compatibility
+                                }
+                            }
+                            if (paths.length > 0) {
+                                vscode.postMessage({ type: 'writeToTerminal', value: paths.join(' ') + ' ' });
+                            }
+                        } else {
+                            const text = e.dataTransfer.getData('text/plain');
+                            if (text) {
+                                vscode.postMessage({ type: 'writeToTerminal', value: text });
+                            }
+                        }
                     });
 
                     // Handle Ctrl+V / Cmd+V to Paste
@@ -345,6 +469,16 @@ export class OpencodeWebviewProvider implements vscode.WebviewViewProvider {
                                 break;
                             case 'terminalClear':
                                 term.reset();
+                                fitAddon.fit();
+                                vscode.postMessage({
+                                    type: 'terminalResize',
+                                    cols: term.cols,
+                                    rows: term.rows
+                                });
+                                break;
+                            case 'terminalStarted':
+                                document.getElementById('closed-state').style.display = 'none';
+                                document.getElementById('terminal-container').style.display = 'block';
                                 fitAddon.fit();
                                 vscode.postMessage({
                                     type: 'terminalResize',

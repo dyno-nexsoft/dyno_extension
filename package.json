@@ -40,6 +40,47 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Dyno Extension",
+      "properties": {
+        "dyno.wsScrcpyPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the ws-scrcpy directory (e.g. E:\\Projects\\ws-scrcpy)",
+          "order": 0
+        },
+        "dynoExtension.ai.geminiApiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Gemini API Key. Lấy tại [Google AI Studio](https://aistudio.google.com/apikey).",
+          "order": 1
+        },
+        "dynoExtension.ai.ollamaEndpoint": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Endpoint của Ollama server.",
+          "order": 2
+        },
+        "dynoExtension.terminal.opencodeCommand": {
+          "type": "string",
+          "default": "opencode",
+          "description": "Command to run for the Opencode tab in the AI sidebar terminal.",
+          "order": 3
+        },
+        "dynoExtension.terminal.claudeCommand": {
+          "type": "string",
+          "default": "claude",
+          "description": "Command to run for the Claude tab in the AI sidebar terminal.",
+          "order": 4
+        },
+        "dynoExtension.terminal.geminiCommand": {
+          "type": "string",
+          "default": "gemini",
+          "description": "Command to run for the Gemini tab in the AI sidebar terminal.",
+          "order": 5
+        }
+      }
+    },
     "commands": [
       {
         "command": "dynoExtension.sortDocument",
@@ -79,6 +120,16 @@
       {
         "command": "dynoExtension.uninstallClaudeMonitorHook",
         "title": "Claude Task Monitor: Remove Live Hook"
+      },
+      {
+        "command": "dynoExtension.refreshEmulators",
+        "title": "Refresh Android Emulators",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "dynoExtension.startEmulator",
+        "title": "Start Android Emulator",
+        "icon": "$(play)"
       }
     ],
     "menus": {
@@ -109,6 +160,20 @@
         {
           "command": "dynoExtension.changeAiProvider"
         }
+      ],
+      "view/title": [
+        {
+          "command": "dynoExtension.refreshEmulators",
+          "when": "view == dyno.androidEmulators",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "dynoExtension.startEmulator",
+          "when": "view == dyno.androidEmulators && viewItem == emulatorItem",
+          "group": "inline"
+        }
       ]
     },
     "keybindings": [
@@ -122,8 +187,8 @@
       "activitybar": [
         {
           "id": "opencode-explorer",
-          "title": "Opencode",
-          "icon": "$(sparkle)"
+          "title": "Dyno Extension",
+          "icon": "resources/dyno.svg"
         }
       ]
     },
@@ -133,49 +198,23 @@
           "type": "webview",
           "id": "opencode.sidebar.view",
           "name": "Opencode Terminal"
+        },
+        {
+          "id": "dyno.androidEmulators",
+          "name": "Android Emulators"
+        },
+        {
+          "type": "webview",
+          "id": "dyno.emulatorStream",
+          "name": "Emulator Stream (WebRTC)"
         }
       ]
-    },
-    "configuration": {
-      "title": "Dyno Extension",
-      "properties": {
-        "dynoExtension.ai.geminiApiKey": {
-          "type": "string",
-          "default": "",
-          "markdownDescription": "Gemini API Key. Lấy tại [Google AI Studio](https://aistudio.google.com/apikey).",
-          "order": 1
-        },
-        "dynoExtension.ai.ollamaEndpoint": {
-          "type": "string",
-          "default": "http://localhost:11434",
-          "description": "Endpoint của Ollama server.",
-          "order": 2
-        },
-        "dynoExtension.terminal.opencodeCommand": {
-          "type": "string",
-          "default": "opencode",
-          "description": "Command to run for the Opencode tab in the AI sidebar terminal.",
-          "order": 3
-        },
-        "dynoExtension.terminal.claudeCommand": {
-          "type": "string",
-          "default": "claude",
-          "description": "Command to run for the Claude tab in the AI sidebar terminal.",
-          "order": 4
-        },
-        "dynoExtension.terminal.geminiCommand": {
-          "type": "string",
-          "default": "gemini",
-          "description": "Command to run for the Gemini tab in the AI sidebar terminal.",
-          "order": 5
-        }
-      }
     }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "compile": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --external:node-pty --platform=node --format=cjs --sourcemap",
+    "watch": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --external:node-pty --platform=node --format=cjs --sourcemap --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "package-to-desktop": "vsce package -o \"%USERPROFILE%\\Desktop\\dyno-extension.vsix\""
   },
@@ -190,6 +229,7 @@
     "@types/node": "18.x",
     "@types/vscode": "^1.80.0",
     "@vscode/vsce": "^3.9.2",
+    "esbuild": "^0.28.1",
     "typescript": "^5.1.3"
   }
 }
