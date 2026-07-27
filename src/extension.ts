@@ -6,7 +6,6 @@ import { openClaudeMonitor } from './claudeMonitor';
 import { installMonitorHook, uninstallMonitorHook } from './monitorHook';
 import { logInfo } from './utils';
 import { OpencodeWebviewProvider } from './opencodeWebview';
-import { EmulatorProvider, EmulatorItem } from './emulatorProvider';
 import { EmulatorStreamProvider } from './emulatorStream';
 export function activate(context: vscode.ExtensionContext) {
     logInfo('Dyno Extension activated successfully.');
@@ -116,20 +115,6 @@ export function activate(context: vscode.ExtensionContext) {
         emulatorStreamProvider
     );
 
-    const emulatorProvider = new EmulatorProvider();
-    vscode.window.registerTreeDataProvider('dyno.androidEmulators', emulatorProvider);
-
-    const refreshEmulatorsDisposable = vscode.commands.registerCommand('dynoExtension.refreshEmulators', () => {
-        emulatorProvider.refresh();
-    });
-
-    const startEmulatorDisposable = vscode.commands.registerCommand('dynoExtension.startEmulator', (item: EmulatorItem) => {
-        // If triggered from the inline icon, the argument is the TreeItem
-        // If we also want to allow passing the AVD name as string, we can check the type
-        const avdName = typeof item === 'string' ? item : (item?.label || '');
-        emulatorProvider.startEmulator(avdName);
-    });
-
     context.subscriptions.push(
         sortDocumentDisposable,
         sortSelectionDisposable,
@@ -140,9 +125,7 @@ export function activate(context: vscode.ExtensionContext) {
         installHookDisposable,
         uninstallHookDisposable,
         opencodeDisposable,
-        emulatorStreamDisposable,
-        refreshEmulatorsDisposable,
-        startEmulatorDisposable
+        emulatorStreamDisposable
     );
 }
 

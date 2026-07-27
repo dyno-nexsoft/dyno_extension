@@ -120,16 +120,6 @@
       {
         "command": "dynoExtension.uninstallClaudeMonitorHook",
         "title": "Claude Task Monitor: Remove Live Hook"
-      },
-      {
-        "command": "dynoExtension.refreshEmulators",
-        "title": "Refresh Android Emulators",
-        "icon": "$(refresh)"
-      },
-      {
-        "command": "dynoExtension.startEmulator",
-        "title": "Start Android Emulator",
-        "icon": "$(play)"
       }
     ],
     "menus": {
@@ -160,20 +150,6 @@
         {
           "command": "dynoExtension.changeAiProvider"
         }
-      ],
-      "view/title": [
-        {
-          "command": "dynoExtension.refreshEmulators",
-          "when": "view == dyno.androidEmulators",
-          "group": "navigation"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "dynoExtension.startEmulator",
-          "when": "view == dyno.androidEmulators && viewItem == emulatorItem",
-          "group": "inline"
-        }
       ]
     },
     "keybindings": [
@@ -198,10 +174,6 @@
           "type": "webview",
           "id": "opencode.sidebar.view",
           "name": "Opencode Terminal"
-        },
-        {
-          "id": "dyno.androidEmulators",
-          "name": "Android Emulators"
         },
         {
           "type": "webview",
