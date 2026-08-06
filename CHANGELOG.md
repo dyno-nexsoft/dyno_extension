@@ -2,6 +2,16 @@
 
 All notable changes to the "Dyno Extension" extension will be documented in this file.
 
+## [0.2.7] - 2026-08-06
+- Added **Android Emulator Management & Stream View**:
+  - Live WebRTC stream of Android emulators with WebRTC-based mirroring (`Emulator Stream` sidebar tab).
+  - Streamed terminal shell tab integrated into the emulator stream view.
+  - Consolidated emulator management into the stream provider and removed the old tree view.
+- **AI Commit Generator fixes**:
+  - Added a re-entry guard that ignores repeated clicks on "Generate Commit Message" while a generation is already in progress.
+  - Added support for remote SSH workspaces: git commands now run with `--no-pager` and `GIT_OPTIONAL_LOCKS=0` to avoid hangs/locks.
+  - Added a warning when the Ollama endpoint points to `localhost` on a remote SSH workspace (where `localhost` refers to the remote machine).
+
 ## [0.2.6]
 - Added 3 Custom HTML Tabs (Opencode, Claude, Gemini) in AI Sidebar Terminal for quick switching.
 - Modified Sidebar Terminal to act as a dynamic CLI switcher that changes the running process based on selected tab.
