@@ -8,7 +8,11 @@ import { logError, logInfo } from './utils';
 
 function getGitDiff(cwd: string): string {
     try {
-        const diff = execSync('git diff --staged', { cwd, encoding: 'utf-8' });
+        const diff = execSync('git --no-pager diff --staged', {
+            cwd,
+            encoding: 'utf-8',
+            env: { ...process.env, GIT_OPTIONAL_LOCKS: '0' },
+        });
         return diff.trim();
     } catch (err) {
         throw new Error('Failed to run git. Make sure git is installed and this folder is a git repository.');
@@ -325,7 +329,11 @@ async function runGeneration(
         // Check if there are unstaged changes
         let hasUnstaged = false;
         try {
-            const status = execSync('git status --porcelain', { cwd: selectedRepo.rootUri.fsPath, encoding: 'utf-8' });
+            const status = execSync('git --no-pager status --porcelain', {
+                cwd: selectedRepo.rootUri.fsPath,
+                encoding: 'utf-8',
+                env: { ...process.env, GIT_OPTIONAL_LOCKS: '0' },
+            });
             hasUnstaged = status.trim().length > 0;
         } catch (err) {}
 
@@ -336,7 +344,10 @@ async function runGeneration(
             );
             if (action === 'Yes') {
                 try {
-                    execSync('git add .', { cwd: selectedRepo.rootUri.fsPath });
+                    execSync('git add .', {
+                        cwd: selectedRepo.rootUri.fsPath,
+                        env: { ...process.env, GIT_OPTIONAL_LOCKS: '0' },
+                    });
                     diff = getGitDiff(selectedRepo.rootUri.fsPath);
                 } catch (err) {
                     vscode.window.showErrorMessage('Failed to stage changes.');
@@ -439,6 +450,14 @@ async function getOllamaModels(endpoint: string): Promise<vscode.QuickPickItem[]
 
 let sessionGeminiModel: string | undefined;
 let sessionOllamaModel: string | undefined;
+
+// True while a commit-message generation is in flight, used to ignore
+// repeated clicks on the "Generate Commit Message" button.
+let isGenerating = false;
+
+function isRemoteWorkspace(): boolean {
+    return vscode.env.remoteName !== undefined && vscode.env.remoteName !== '';
+}
 
 export async function changeAiProvider(context: vscode.ExtensionContext): Promise<void> {
     const config = vscode.workspace.getConfiguration('dynoExtension');
@@ -553,6 +572,29 @@ export async function changeAiProvider(context: vscode.ExtensionContext): Promis
 }
 
 export async function generateCommitMessage(context: vscode.ExtensionContext, scm?: any): Promise<void> {
+    // Guard against double-clicks while a generation is already running.
+    if (isGenerating) {
+        vscode.window.showWarningMessage(
+            'Dyno Extension: A commit message is already being generated. Please wait for it to finish.'
+        );
+        return;
+    }
+
+    // On a remote SSH workspace the extension host runs on the remote machine,
+    // so git and any local Ollama endpoint below refer to the remote host.
+    if (isRemoteWorkspace()) {
+        logInfo(`Generate commit message requested on remote workspace (${vscode.env.remoteName}).`);
+    }
+
+    isGenerating = true;
+    try {
+        await generateCommitMessageInternal(context, scm);
+    } finally {
+        isGenerating = false;
+    }
+}
+
+async function generateCommitMessageInternal(context: vscode.ExtensionContext, scm?: any): Promise<void> {
     const config = vscode.workspace.getConfiguration('dynoExtension');
     const currentProvider = context.globalState.get<string>('lastAiProvider', 'gemini');
     
@@ -565,6 +607,25 @@ export async function generateCommitMessage(context: vscode.ExtensionContext, sc
     
     const geminiApiKey = config.get<string>('ai.geminiApiKey', '').trim();
     const ollamaEndpoint = config.get<string>('ai.ollamaEndpoint', 'http://localhost:11434').trim().replace(/\/$/, '');
+
+    // On remote SSH, the extension host runs on the remote machine, so a
+    // localhost Ollama endpoint would point at the remote host instead of the
+    // user's local machine. Warn so the user isn't surprised by the failure.
+    if (isRemoteWorkspace() && currentProvider === 'ollama' && /localhost|127\.0\.0\.1/.test(ollamaEndpoint)) {
+        const action = await vscode.window.showWarningMessage(
+            'Dyno Extension: You are on a remote SSH workspace, but the Ollama endpoint points to ' +
+            `"${ollamaEndpoint}". On remote, "localhost" refers to the remote machine. ` +
+            'Update the endpoint to reach your local Ollama (e.g. the LAN IP of your machine).',
+            'Open Settings', 'Continue Anyway'
+        );
+        if (action === 'Open Settings') {
+            vscode.commands.executeCommand('workbench.action.openSettings', 'dynoExtension');
+            return;
+        }
+        if (action === undefined) {
+            return; // user dismissed the warning
+        }
+    }
 
     if (currentProvider === 'gemini') {
         if (!geminiApiKey) {
