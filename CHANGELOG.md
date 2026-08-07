@@ -2,6 +2,9 @@
 
 All notable changes to the "Dyno Extension" extension will be documented in this file.
 
+## [0.2.8] - 2026-08-06
+- Fixed Gemini commit messages being cut off by increasing the maximum output tokens from `512` to `8192`, so long/multi-line commit messages are no longer truncated.
+
 ## [0.2.7] - 2026-08-06
 - Added **Android Emulator Management & Stream View**:
   - Live WebRTC stream of Android emulators with WebRTC-based mirroring (`Emulator Stream` sidebar tab).
