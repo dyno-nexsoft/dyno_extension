@@ -145,7 +145,7 @@ async function callGemini(prompt: string, systemInstruction: string, overrideMod
         systemInstruction: {
             parts: [{ text: systemInstruction }]
         },
-        generationConfig: { temperature: 0.3, maxOutputTokens: 512 },
+        generationConfig: { temperature: 0.3, maxOutputTokens: 8192 },
     };
 
     const response = await fetch(url, {
