@@ -2,7 +2,7 @@
   "name": "dyno-extension",
   "displayName": "Dyno Extension",
   "description": "Sort keys in JSON/YAML/ENV files and generate AI-powered commit messages",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "publisher": "dyno-nexsoft",
   "author": "Dyno Nexsoft",
   "icon": "icon.png",
@@ -34,6 +34,7 @@
     "onLanguage:dotenv",
     "onLanguage:ignore",
     "onLanguage:plaintext",
+    "onLanguage:dart",
     "onCommand:dynoExtension.generateDartBarrel",
     "onCommand:dynoExtension.generateCommitMessage",
     "onCommand:dynoExtension.changeAiProvider"
@@ -78,6 +79,25 @@
           "default": "gemini",
           "description": "Command to run for the Gemini tab in the AI sidebar terminal.",
           "order": 5
+        },
+        "dynoExtension.featureLint.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Flag direct imports of package:<packageName>/features/<feature>/... from outside that feature (Dart) as editor errors.",
+          "order": 6
+        },
+        "dynoExtension.featureLint.packageName": {
+          "type": "string",
+          "default": "",
+          "description": "The Dart package name to check imports against (e.g. tbchat_main).",
+          "order": 7
+        },
+        "dynoExtension.featureLint.features": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Feature folder names under lib/features/ whose boundary should be enforced (e.g. [\"im\", \"wallet\", \"cloud_storage\", \"socialfi\"]).",
+          "order": 8
         }
       }
     },

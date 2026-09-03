@@ -2,6 +2,11 @@
 
 All notable changes to the "Dyno Extension" extension will be documented in this file.
 
+## [0.2.9] - 2026-09-03
+- Added **Feature Boundary Lint** for Dart projects: flags direct imports of `package:<packageName>/features/<feature>/...` from outside that feature as real editor diagnostics (Problems panel + red squiggles), no `custom_lint`/analyzer plugin needed.
+  - Configurable via `dynoExtension.featureLint.enabled`, `.packageName`, `.features`.
+  - Skips generated files (`.g.dart`, `.freezed.dart`, `.config.dart`).
+
 ## [0.2.8] - 2026-08-06
 - Fixed Gemini commit messages being cut off by increasing the maximum output tokens from `512` to `8192`, so long/multi-line commit messages are no longer truncated.
 

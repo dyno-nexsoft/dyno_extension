@@ -7,8 +7,11 @@ import { installMonitorHook, uninstallMonitorHook } from './monitorHook';
 import { logInfo } from './utils';
 import { OpencodeWebviewProvider } from './opencodeWebview';
 import { EmulatorStreamProvider } from './emulatorStream';
+import { activateFeatureLint } from './featureLint';
 export function activate(context: vscode.ExtensionContext) {
     logInfo('Dyno Extension activated successfully.');
+
+    activateFeatureLint(context);
     const sortDocumentDisposable = vscode.commands.registerTextEditorCommand(
         'dynoExtension.sortDocument',
         (textEditor, edit) => {
