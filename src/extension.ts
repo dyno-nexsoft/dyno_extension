@@ -2,11 +2,8 @@ import * as vscode from 'vscode';
 import { sortDocument, sortSelection } from './sorter';
 import { generateBarrelFile } from './barrelGenerator';
 import { generateCommitMessage, changeAiProvider } from './commitGenerator';
-import { openClaudeMonitor } from './claudeMonitor';
-import { installMonitorHook, uninstallMonitorHook } from './monitorHook';
 import { logInfo } from './utils';
 import { OpencodeWebviewProvider } from './opencodeWebview';
-import { EmulatorStreamProvider } from './emulatorStream';
 import { activateFeatureLint } from './featureLint';
 export function activate(context: vscode.ExtensionContext) {
     logInfo('Dyno Extension activated successfully.');
@@ -73,49 +70,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
 
-    const claudeMonitorDisposable = vscode.commands.registerCommand(
-        'dynoExtension.showClaudeMonitor',
-        () => openClaudeMonitor(context)
-    );
-
-    const installHookDisposable = vscode.commands.registerCommand(
-        'dynoExtension.installClaudeMonitorHook',
-        async () => {
-            const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-            if (!cwd) { vscode.window.showErrorMessage('Claude Monitor: No workspace folder open.'); return; }
-            try {
-                const msg = await installMonitorHook(cwd);
-                vscode.window.showInformationMessage(`Claude Monitor: ${msg}`);
-            } catch (e) {
-                vscode.window.showErrorMessage(`Claude Monitor: ${(e as Error).message}`);
-            }
-        }
-    );
-
-    const uninstallHookDisposable = vscode.commands.registerCommand(
-        'dynoExtension.uninstallClaudeMonitorHook',
-        async () => {
-            const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-            if (!cwd) { vscode.window.showErrorMessage('Claude Monitor: No workspace folder open.'); return; }
-            try {
-                const msg = await uninstallMonitorHook(cwd);
-                vscode.window.showInformationMessage(`Claude Monitor: ${msg}`);
-            } catch (e) {
-                vscode.window.showErrorMessage(`Claude Monitor: ${(e as Error).message}`);
-            }
-        }
-    );
-
     const opencodeProvider = new OpencodeWebviewProvider(context.extensionUri);
     const opencodeDisposable = vscode.window.registerWebviewViewProvider(
         OpencodeWebviewProvider.viewType,
         opencodeProvider
-    );
-
-    const emulatorStreamProvider = new EmulatorStreamProvider(context.extensionUri);
-    const emulatorStreamDisposable = vscode.window.registerWebviewViewProvider(
-        EmulatorStreamProvider.viewType,
-        emulatorStreamProvider
     );
 
     context.subscriptions.push(
@@ -124,11 +82,7 @@ export function activate(context: vscode.ExtensionContext) {
         generateBarrelDisposable,
         generateCommitDisposable,
         changeAiProviderDisposable,
-        claudeMonitorDisposable,
-        installHookDisposable,
-        uninstallHookDisposable,
-        opencodeDisposable,
-        emulatorStreamDisposable
+        opencodeDisposable
     );
 }
 

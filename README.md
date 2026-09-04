@@ -1,136 +1,148 @@
 <div align="center">
   <img src="icon.png" width="128" height="128" alt="Dyno Extension Icon" />
   <h1>Dyno Extension</h1>
-  <p>A powerful VS Code extension to sort data files, generate Dart barrel files, craft AI-powered commit messages, and monitor Claude Code execution in real-time.</p>
+  <p>An all-in-one developer toolkit for VS Code: multi-format file sorting, Dart barrel generation, architectural feature linting, AI-assisted Git commit messages, and an integrated AI CLI terminal sidebar.</p>
 </div>
 
 ## Features
 
-### 🔤 Sort Files
+### 🔤 Multi-Format File & Selection Sorting
 
-- **Sort Document**: Sorts all keys in the current file alphabetically.
-- **Sort Selection**: Sorts only the keys within your highlighted selection.
-- **Context Menu**: Quick access to sorting directly from the Right-Click menu inside the editor.
-- **Comment-safe**: Preserves comments in YAML and JSONC files.
-- **Recursive sorting**: Deeply sorts nested objects in JSON and YAML files.
-- **ENV block sorting**: Sorts `.env` / `.properties` files while keeping `#` comments attached to their keys.
-- **Line Sorting**: Sorts plain text files line-by-line.
+Clean up and normalize data files, environment variables, and configuration files with ease.
+
+- **Sort Document & Selection**: Alphabetically sort entire files or highlighted blocks via Right-Click editor context menu or Command Palette.
+- **Comment-Safe JSON / JSONC**: Deeply and recursively sorts keys in JSON and JSONC files while preserving comments and symbol metadata using `comment-json`.
+- **Structure-Preserving YAML**: Deeply sorts nested YAML maps while preserving comments and document structure using `yaml` AST manipulation.
+- **ENV / Properties Block Sorting**: Sorts `.env`, `.properties`, and `dotenv` files while keeping comments (`#`) and blank-line groupings attached to their respective keys, with support for multiline value continuations (`\`).
+- **Plain Text Line Sorting**: Sorts lines alphabetically in plain text and `.ignore` files while preserving trailing blank lines at the bottom.
+- **Smart Indentation**: Automatically respects the document's active indentation (spaces or tabs).
 
 ### ✨ AI Commit Message Generator
 
-- **One-click generation** from the Source Control commit input box.
-- **Choose your AI provider** via a dropdown menu — similar to GitLens:
-  - `✨ Generate Commit Message with Gemini` — uses Google Gemini API (cloud)
-  - `🤖 Generate Commit Message with Ollama` — uses a local Ollama model (private, no API key)
-  - `⚙️ Switch AI Provider / Configure...` — opens Settings
-- Generates messages following **Conventional Commits** format (`feat:`, `fix:`, `chore:`, etc.)
-- Reads only your **staged changes** (`git diff --staged`) — unstaged files are never sent.
-- Lets you **review and edit** the message before it is applied.
-- Automatically fills the message into the **Git SCM input box**.
+Craft clean, standardized Conventional Commits in seconds directly from the Source Control (SCM) panel.
 
-### 📊 Claude Task Monitor
+- **One-Click Generation**: Click the **✨ sparkle icon** on the Source Control title bar or run `Dyno Extension: Generate Commit Message with AI`.
+- **Flexible AI Providers**:
+  - **Google Gemini**: Connects directly to Google Gemini API (defaults to fast, high-quality models such as `gemini-2.5-flash`).
+  - **Local / Remote Ollama**: Connects to your local or private Ollama instance (`http://localhost:11434`), zero API key required.
+- **Interactive Provider & Model Selector**: Choose and cache your preferred provider and model with a single click. Switch anytime via the **⚙️ gear icon** on the SCM title bar (`Dyno Extension: Change AI Provider`).
+- **Conventional Commits Compliant**: Produces clear messages (`feat:`, `fix:`, `chore:`, `refactor:`, etc.) with single-line format for simple changes and clean bulleted descriptions for multi-part changes.
+- **Safe & Optimized**:
+  - Only inspects staged changes (`git diff --staged`).
+  - Optimizes deleted file diffs to conserve tokens.
+  - Detects unstaged files and prompts to `git add .` if needed.
+  - Works seamlessly across Remote SSH, WSL, and Dev Containers (`--no-pager`, `GIT_OPTIONAL_LOCKS=0`).
 
-- **Hub-and-spoke agent orchestration diagram**: Live map of the main model (orchestrator) and subagents spawned via the Task tool.
-- **Live run status color-coding**: Highlights subagent node state (pulsing blue for running, green for done, red for failed).
-- **Token, duration & pricing metrics**: Real-time cost estimation and token counts per model (e.g. Sonnet, Haiku, Opus).
-- **Incremental session updates**: Parsed in real-time by tailing Claude Code transcript JSONL files.
-- **Git change status integration**: Shows badges (Modified/Added/Deleted/Untracked) and allows clicking files to open or shift-clicking to reveal.
-- **Live hook server**: Installs/uninstalls hooks in `.claude/settings.json` for near-instant webview refreshes.
+### 💻 Embedded AI Terminal Sidebar
 
-### 💻 Opencode Terminal
+Run your preferred AI coding CLIs right inside VS Code without switching windows.
 
-- **Sidebar Integration**: Access `opencode` directly from a dedicated Activity Bar tab (Sparkle icon).
-- **Embedded Webview Terminal**: Full terminal experience embedded within the Sidebar using `xterm.js`.
-- **Quick Controls**: Includes native SVG buttons for `Reload` and `Close` to manage the background process easily.
-- **Smart Resizing**: Automatically handles window resizes for a seamless and responsive layout.
+- **Dedicated Sidebar Container**: Access via the **Dyno Extension** icon in the Activity Bar.
+- **Dynamic CLI Switcher**: Quick-switch between tabs for popular AI tools and shell:
+  - **Opencode**: Runs `opencode` CLI.
+  - **Claude**: Runs `claude` CLI.
+  - **Gemini**: Runs `gemini` CLI.
+  - **Shell**: Drops into your system's default shell (PowerShell / cmd / bash / zsh).
+- **Native Webview Terminal**: Powered by `xterm.js` and `node-pty` with automatic window resizing via `ResizeObserver`.
+- **Integrated Controls**: Custom right-click context menu (Copy / Paste), Start / Close process lifecycle management, and custom styled scrollbars matching the VS Code theme.
+- **Configurable Commands**: Custom CLI commands configurable in VS Code settings.
 
 ### 🎯 Dart Barrel File Generator
 
-- **Right-click any folder** in the Explorer → **"Generate Dart Barrel File"**
-- Recursively scans all `.dart` files in the folder and sub-folders.
-- Automatically skips `part of` files (they cannot be independently export-declared).
-- Generates a `<folder_name>.dart` barrel file with sorted `export` statements.
-- Overwrites the existing barrel file to keep it in sync with the folder.
+Quickly bundle and export public APIs in Dart and Flutter packages.
+
+- **Explorer Context Menu**: Right-click any folder in the VS Code file explorer → **"Generate Dart Barrel File"**.
+- **Recursive Scan**: Scans all `.dart` files within the selected folder and sub-folders.
+- **Smart `part of` Exclusion**: Automatically inspects files and skips `part of` files, ensuring only standalone exportable libraries are included.
+- **Deterministic & Sorted**: Generates `<folder_name>.dart` with cleanly sorted relative `export` statements.
+
+### 🛡️ Dart Feature Boundary Lint
+
+Enforce modular Clean Architecture boundaries in Flutter / Dart projects without needing third-party analyzer plugins or `custom_lint`.
+
+- **Editor Diagnostics**: Highlights forbidden cross-feature imports as red squiggles in the editor and reports them in the **Problems** panel.
+- **Encapsulation Enforcement**: Prevents direct imports across feature folders (e.g. importing `package:<packageName>/features/wallet/...` from inside `lib/features/im/...`).
+- **Generated File Exemption**: Automatically skips code-generated files (`.g.dart`, `.freezed.dart`, `.config.dart`).
+- **Zero Dependencies**: Pure VS Code diagnostics powered by workspace settings — works out-of-the-box across any Dart/Flutter project.
 
 ---
 
-## Supported Formats
+## Supported Formats & Languages
 
-| Format                    | Feature                                  |
-| ------------------------- | ---------------------------------------- |
-| `JSON` / `JSONC`          | Sort keys, preserve comments             |
-| `YAML`                    | Sort keys, preserve comments & structure |
-| `.env` / `dotenv`         | Sort keys, keep comment blocks attached  |
-| `.properties`             | Sort keys, keep comment blocks attached  |
-| `Plain Text` (.txt, etc.) | Sort lines A–Z                           |
-| `Dart` folders            | Generate barrel file                     |
-| Any `git` repo            | AI commit message generation             |
-| Claude CLI / Code         | Real-time agent orchestration & cost monitor |
+| Format / Language           | Supported Features                                            |
+| --------------------------- | ------------------------------------------------------------ |
+| `JSON` / `JSONC`            | Recursive key sorting, comment preservation                  |
+| `YAML`                      | Recursive key sorting, structure & comment preservation      |
+| `.env` / `.properties`      | Key sorting, comment block preservation, multiline values    |
+| `Plain Text` / `.ignore`    | Alphabetical line sorting                                    |
+| `Dart`                      | Barrel file generation, feature boundary lint diagnostics    |
+| Any `git` repository        | AI Conventional Commit message generation                    |
+| Terminal CLIs               | Opencode, Claude Code, Gemini CLI, system shell              |
 
 ---
 
 ## How to Use
 
-### Sort a file
+### 1. Sort a File or Selection
+- **Sort Document**: Open a file (`.json`, `.yaml`, `.env`, `.properties`, `.txt`), right-click → **"Dyno Extension: Sort Document"**.
+- **Sort Selection**: Highlight a section of code, right-click → **"Dyno Extension: Sort Selection"**.
+- _(Shortcut: Command Palette `Ctrl+Shift+P` / `Cmd+Shift+P` → Search "Dyno Extension: Sort")_
 
-1. Open a supported file (e.g., `data.json`, `config.yaml`, `.env`).
-2. **Right-Click** anywhere in the file → **"Dyno Extension: Sort Document"**.
-3. To sort a specific section, highlight text → **Right-Click** → **"Dyno Extension: Sort Selection"**.
-4. _(Alternatively: Command Palette `Ctrl+Shift+P` / `Cmd+Shift+P`)_
+### 2. Generate AI Commit Message
+1. Stage your git changes (`git add`).
+2. Open the **Source Control** view (`Ctrl+Shift+G`).
+3. Click the **✨ sparkle icon** in the Source Control title bar.
+4. The extension analyzes your staged diff and fills the generated commit message directly into the Git commit input box.
+5. To change the AI provider (Gemini / Ollama) or model, click the **⚙️ gear icon** in the Source Control title bar.
 
-### Generate AI Commit Message
+### 3. Use the AI Terminal Sidebar
+1. Click the **Dyno Extension** icon in the VS Code Activity Bar.
+2. Select a tab (**Opencode**, **Claude**, **Gemini**, or **Shell**).
+3. Click **Start Terminal** if not already running.
+4. Right-click inside the terminal for Copy / Paste actions.
 
-1. Stage your changes with `git add`.
-2. Open the **Source Control** panel (`Ctrl+Shift+G`).
-3. Click the **✨ sparkle icon** on the Source Control title bar (top right).
-4. Select a provider from the dropdown:
-   - **Gemini** — requires an API key (see configuration below).
-   - **Ollama** — requires Ollama running locally (`ollama serve`).
-5. A loading indicator `[Generating commit message...]` will appear directly inside the input box.
-6. Once ready, the generated commit message is filled **directly** into the Git input box for you to review, edit, or commit.
-
-### Monitor Claude CLI / Code Sessions
-
-1. Open the monitor webview:
-   - Press `Ctrl+Alt+M` (or `Cmd+Alt+M` on macOS).
-   - Or click the **Graph icon** in the Source Control panel's title bar.
-   - Or run `Claude Task Monitor` from the Command Palette.
-2. Select a workspace session from the dropdown at the top right to view historical or current runs.
-3. **Optional: Install Live Hook** for instant webview updates:
-   - Open Command Palette and run `Claude Task Monitor: Install Live Hook`.
-   - This starts a lightweight loopback server and registers a hook in `.claude/settings.json`.
-   - To remove the hook, run `Claude Task Monitor: Remove Live Hook` from the Command Palette.
-
-### Generate Dart Barrel File
-
-1. **Right-click a folder** in the VS Code Explorer.
+### 4. Generate Dart Barrel Files
+1. In the Explorer pane, right-click any folder containing Dart files.
 2. Select **"Generate Dart Barrel File"**.
-3. A `<folder_name>.dart` file will be created (or overwritten) with all exports sorted.
+3. A `<folder_name>.dart` file will be created or updated with sorted exports.
 
-**Example output** for a folder named `models/`:
+### 5. Enable Dart Feature Boundary Lint
+Add the following to your `.vscode/settings.json` or user settings:
 
-```dart
-export 'post.dart';
-export 'sub/category.dart';
-export 'user.dart';
+```json
+{
+  "dynoExtension.featureLint.enabled": true,
+  "dynoExtension.featureLint.packageName": "my_flutter_app",
+  "dynoExtension.featureLint.features": [
+    "auth",
+    "chat",
+    "wallet",
+    "profile",
+    "settings"
+  ]
+}
 ```
 
 ---
 
 ## Extension Settings
 
-| Setting                         | Default                    | Description                                                                                     |
-| ------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------- |
-| `dynoExtension.geminiApiKey`    | `""`                       | Your Gemini API key — get one free at [aistudio.google.com](https://aistudio.google.com/apikey) |
-| `dynoExtension.ollamaEndpoint`  | `"http://localhost:11434"` | Ollama server endpoint                                                                          |
-
-> **Tip:** You can open settings directly from the **⚙️ Switch AI Provider / Configure...** option in the commit message dropdown.
+| Setting                                    | Default                  | Description                                                                                          |
+| ------------------------------------------ | ------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `dynoExtension.ai.geminiApiKey`            | `""`                     | Gemini API Key. Get a key at [Google AI Studio](https://aistudio.google.com/apikey).                |
+| `dynoExtension.ai.ollamaEndpoint`          | `"http://localhost:11434"` | URL of your local or remote Ollama server.                                                         |
+| `dynoExtension.terminal.opencodeCommand`   | `"opencode"`             | Executable or command run in the Opencode tab of the AI sidebar terminal.                           |
+| `dynoExtension.terminal.claudeCommand`     | `"claude"`               | Executable or command run in the Claude tab of the AI sidebar terminal.                             |
+| `dynoExtension.terminal.geminiCommand`     | `"gemini"`               | Executable or command run in the Gemini tab of the AI sidebar terminal.                             |
+| `dynoExtension.featureLint.enabled`        | `false`                  | Enables feature boundary linting for Dart files.                                                     |
+| `dynoExtension.featureLint.packageName`    | `""`                     | Dart package name to check imports against (e.g. `tbchat_main`).                                     |
+| `dynoExtension.featureLint.features`       | `[]`                     | Feature folder names under `lib/features/` whose boundaries should be enforced.                     |
 
 ---
 
 ## Release Notes
 
-See the [CHANGELOG.md](CHANGELOG.md) for all release notes and version history.
+See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
 ---
 

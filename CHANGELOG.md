@@ -2,6 +2,15 @@
 
 All notable changes to the "Dyno Extension" extension will be documented in this file.
 
+## [0.2.10] - 2026-09-04
+- **Removed Claude Task Monitor & Emulator Stream features**:
+  - Removed Claude Task Monitor webview, hook server, keybindings (`Ctrl+Alt+M`), and commands.
+  - Removed Android Emulator Management & WebRTC Stream sidebar view.
+  - Cleaned up obsolete configuration settings (`dyno.wsScrcpyPath`).
+- **Documentation & Manifest Alignment**:
+  - Extensively updated `README.md` to document all active features: Dart Feature Boundary Lint, AI Commit Generator, Opencode / Multi-CLI Terminal, Dart Barrel File Generator, and Multi-Format Sorting.
+  - Aligned extension configuration property documentation with `package.json` (`dynoExtension.ai.*`, `dynoExtension.terminal.*`, `dynoExtension.featureLint.*`).
+
 ## [0.2.9] - 2026-09-03
 - Added **Feature Boundary Lint** for Dart projects: flags direct imports of `package:<packageName>/features/<feature>/...` from outside that feature as real editor diagnostics (Problems panel + red squiggles), no `custom_lint`/analyzer plugin needed.
   - Configurable via `dynoExtension.featureLint.enabled`, `.packageName`, `.features`.

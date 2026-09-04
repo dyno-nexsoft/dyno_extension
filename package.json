@@ -2,7 +2,7 @@
   "name": "dyno-extension",
   "displayName": "Dyno Extension",
   "description": "Sort keys in JSON/YAML/ENV files and generate AI-powered commit messages",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "publisher": "dyno-nexsoft",
   "author": "Dyno Nexsoft",
   "icon": "icon.png",
@@ -44,12 +44,6 @@
     "configuration": {
       "title": "Dyno Extension",
       "properties": {
-        "dyno.wsScrcpyPath": {
-          "type": "string",
-          "default": "",
-          "description": "Path to the ws-scrcpy directory (e.g. E:\\Projects\\ws-scrcpy)",
-          "order": 0
-        },
         "dynoExtension.ai.geminiApiKey": {
           "type": "string",
           "default": "",
@@ -127,19 +121,6 @@
         "title": "Dyno Extension: Change AI Provider (Commit Message)",
         "shortTitle": "Dyno Extension: AI Provider",
         "icon": "$(settings-gear)"
-      },
-      {
-        "command": "dynoExtension.showClaudeMonitor",
-        "title": "Claude Task Monitor",
-        "icon": "$(graph)"
-      },
-      {
-        "command": "dynoExtension.installClaudeMonitorHook",
-        "title": "Claude Task Monitor: Install Live Hook"
-      },
-      {
-        "command": "dynoExtension.uninstallClaudeMonitorHook",
-        "title": "Claude Task Monitor: Remove Live Hook"
       }
     ],
     "menus": {
@@ -172,13 +153,6 @@
         }
       ]
     },
-    "keybindings": [
-      {
-        "command": "dynoExtension.showClaudeMonitor",
-        "key": "ctrl+alt+m",
-        "mac": "cmd+alt+m"
-      }
-    ],
     "viewsContainers": {
       "activitybar": [
         {
@@ -194,11 +168,6 @@
           "type": "webview",
           "id": "opencode.sidebar.view",
           "name": "Opencode Terminal"
-        },
-        {
-          "type": "webview",
-          "id": "dyno.emulatorStream",
-          "name": "Emulator Stream (WebRTC)"
         }
       ]
     }
