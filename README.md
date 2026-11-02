@@ -107,11 +107,10 @@ Enforce modular Clean Architecture boundaries in Flutter / Dart projects without
 3. A `<folder_name>.dart` file will be created or updated with sorted exports.
 
 ### 5. Enable Dart Feature Boundary Lint
-Add the following to your `.vscode/settings.json` or user settings:
+Add the following to your `.vscode/settings.json` or user settings (linting is automatically activated when `packageName` is set):
 
 ```json
 {
-  "dynoExtension.featureLint.enabled": true,
   "dynoExtension.featureLint.packageName": "my_flutter_app",
   "dynoExtension.featureLint.features": [
     "auth",
@@ -122,6 +121,12 @@ Add the following to your `.vscode/settings.json` or user settings:
   ]
 }
 ```
+
+Lint results appear as you open / edit / save Dart files. To check the **entire**
+workspace without opening every file, run **"Dyno Extension: Lint Feature
+Boundaries (Whole Workspace)"** from the Command Palette (`Ctrl+Shift+P`). The
+command scans all Dart files once, fills the Problems panel, and writes a
+`file:line:column` report to the **Dyno Feature Lint** output channel.
 
 ---
 
@@ -134,8 +139,7 @@ Add the following to your `.vscode/settings.json` or user settings:
 | `dynoExtension.terminal.opencodeCommand`   | `"opencode"`             | Executable or command run in the Opencode tab of the AI sidebar terminal.                           |
 | `dynoExtension.terminal.claudeCommand`     | `"claude"`               | Executable or command run in the Claude tab of the AI sidebar terminal.                             |
 | `dynoExtension.terminal.geminiCommand`     | `"gemini"`               | Executable or command run in the Gemini tab of the AI sidebar terminal.                             |
-| `dynoExtension.featureLint.enabled`        | `false`                  | Enables feature boundary linting for Dart files.                                                     |
-| `dynoExtension.featureLint.packageName`    | `""`                     | Dart package name to check imports against (e.g. `tbchat_main`).                                     |
+| `dynoExtension.featureLint.packageName`    | `""`                     | Dart package name to check imports against (e.g. `tbchat_main`). Linting is active when not empty.   |
 | `dynoExtension.featureLint.features`       | `[]`                     | Feature folder names under `lib/features/` whose boundaries should be enforced.                     |
 
 ---

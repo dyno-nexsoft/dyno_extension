@@ -2,6 +2,16 @@
 
 All notable changes to the "Dyno Extension" extension will be documented in this file.
 
+## [0.2.12] - 2026-11-02
+- **Whole-workspace feature lint**: new command `dynoExtension.lintFeatureWorkspace` ("Dyno Extension: Lint Feature Boundaries (Whole Workspace)") scans every Dart file once, reports violations in the Problems panel, and writes a `file:line:column` report to the "Dyno Feature Lint" output channel.
+  - Reads files in parallel (32 at a time), skips generated/excluded folders, and logs the elapsed time.
+  - Cancellable from the progress notification.
+- Diagnostics for on-disk files are now kept after their editor is closed (unsaved buffers and deleted files still get cleaned up).
+
+## [0.2.11] - 2026-09-04
+- **Simplified Dart Feature Boundary Lint activation**:
+  - Removed `dynoExtension.featureLint.enabled` setting. Feature linting is now automatically activated as long as `dynoExtension.featureLint.packageName` is set (not empty).
+
 ## [0.2.10] - 2026-09-04
 - **Removed Claude Task Monitor & Emulator Stream features**:
   - Removed Claude Task Monitor webview, hook server, keybindings (`Ctrl+Alt+M`), and commands.
